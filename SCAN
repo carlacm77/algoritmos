@@ -1,0 +1,64 @@
+import matplotlib.pyplot as plt
+
+def scan(orden_pistas, inicio, direccion, num_pistas):
+    np=len(orden_pistas)
+    # Añadir las pistas de inicio y límites del disco si es necesario
+    orden_pistas.append(inicio)
+    if direccion == "abajo":
+        orden_pistas.append(0)
+    else:
+        orden_pistas.append(num_pistas)
+    orden_pistas = sorted(orden_pistas)
+
+    # Dividir las solicitudes a la izquierda y derecha del inicio
+    posicion_inicio = orden_pistas.index(inicio)
+    izquierda = orden_pistas[:posicion_inicio]
+    derecha = orden_pistas[posicion_inicio + 1:]
+
+    # Procesar en la dirección indicada
+    if direccion == "abajo":
+        secuencia = izquierda[::-1] + derecha +[num_pistas]
+    else:
+        secuencia = derecha + izquierda[::-1] + [0]
+
+    # Calcular movimientos totales y longitud media de búsqueda
+    movimientos = 0
+    actual = inicio
+    for pista in secuencia:
+        movimientos += abs(actual - pista)
+        actual = pista
+
+    longitud_media = movimientos / np
+    secuencia= [inicio]+secuencia
+    return secuencia, movimientos, longitud_media
+
+
+def plot_scan(secuencia, inicio):
+    plt.figure(figsize=(10, 5))
+    plt.plot(range(len(secuencia)), secuencia, marker='o', linestyle='-', color='b')  # Invertimos los ejes
+    plt.title("Movimiento del Cabezal de Disco (SCAN)")
+    plt.xlabel("Orden de Procesamiento")  # Ahora el orden está en el eje X
+    plt.ylabel("Pistas")  # Las pistas están en el eje Y
+    plt.yticks(secuencia)
+    plt.grid()
+    plt.show()
+
+
+# Entradas
+orden_pistas = list(map(int, input("Ingrese las solicitudes de pistas separadas por espacios: ").split()))
+inicio = int(input("Ingrese la posición inicial del cabezal: "))
+direccion = input("Ingrese la dirección inicial del movimiento (abajo/arriba): ").strip().lower()
+num_pistas = int(input("Ingrese el número total de pistas del disco: "))
+
+# Ejecución del algoritmo SCAN
+secuencia, movimientos, longitud_media = scan(orden_pistas, inicio, direccion, num_pistas)
+
+# Salidas
+print("\n--- Resultados ---")
+print(f"Orden de pistas procesadas: {secuencia}")
+print(f"Número total de movimientos: {movimientos}")
+print(f"Longitud media de búsqueda: {longitud_media:.2f}")
+
+# Graficar el movimiento del cabezal
+plot_scan(secuencia, inicio)
+
