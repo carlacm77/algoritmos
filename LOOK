@@ -1,0 +1,57 @@
+import matplotlib.pyplot as plt
+
+def look(orden_pistas, inicio, direccion):
+    # Añadir la posición inicial del cabezal y ordenar las solicitudes
+    orden_pistas.append(inicio)
+    orden_pistas = sorted(orden_pistas)
+
+    # Dividir las solicitudes en izquierda y derecha del inicio
+    posicion_inicio = orden_pistas.index(inicio)
+    izquierda = orden_pistas[:posicion_inicio]
+    derecha = orden_pistas[posicion_inicio + 1:]
+
+    # Procesar en la dirección indicada
+    if direccion == "abajo":
+        secuencia = izquierda[::-1] + derecha
+    else:
+        secuencia = derecha + izquierda[::-1]
+
+    # Calcular movimientos totales y longitud media de búsqueda
+    movimientos = 0
+    actual = inicio
+    for pista in secuencia:
+        movimientos += abs(actual - pista)
+        actual = pista
+
+    longitud_media = movimientos / len(secuencia)
+    secuencia=[inicio]+secuencia
+    return secuencia, movimientos, longitud_media
+
+
+def plot_look(secuencia, inicio):
+    plt.figure(figsize=(10, 5))
+    plt.plot(range(len(secuencia)), secuencia, marker='o', linestyle='-', color='b')
+    plt.title("Movimiento del Cabezal de Disco (LOOK)")
+    plt.ylabel("Pistas")
+    plt.xlabel("Orden de Procesamiento")
+    plt.yticks(secuencia)
+    plt.grid()
+    plt.show()
+
+
+# Entradas
+orden_pistas = list(map(int, input("Ingrese las solicitudes de pistas separadas por espacios: ").split()))
+inicio = int(input("Ingrese la posición inicial del cabezal: "))
+direccion = input("Ingrese la dirección inicial del movimiento (abajo/arriba): ").strip().lower()
+
+# Ejecución del algoritmo LOOK
+secuencia, movimientos, longitud_media = look(orden_pistas, inicio, direccion)
+
+# Salidas
+print("\n--- Resultados ---")
+print(f"Orden de pistas procesadas: {secuencia}")
+print(f"Número total de movimientos: {movimientos}")
+print(f"Longitud media de búsqueda: {longitud_media:.2f}")
+
+# Graficar el movimiento del cabezal
+plot_look(secuencia, inicio)
