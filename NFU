@@ -1,0 +1,68 @@
+class NFU:
+    def __init__(self, tamaño_memoria):
+        self.tamaño_memoria = tamaño_memoria  # Tamaño de la memoria
+        self.tabla_paginas = {}              # Tabla de páginas con sus contadores
+        self.orden_llegada = {}              # Registro del orden de llegada de cada página
+        self.fallos_pagina = 0               # Contador de fallos de página
+        self.historial_memoria = []          # Historial del estado de la memoria
+        self.tiempo_actual = 0               # Tiempo actual para el registro FIFO
+
+    def acceder_pagina(self, pagina):
+        self.tiempo_actual += 1  # Incrementar el tiempo con cada acceso
+
+        # Si la página está en memoria, incrementar su contador
+        if pagina in self.tabla_paginas:
+            self.tabla_paginas[pagina] += 1
+        else:
+            # Fallo de página: incrementar contador y reemplazar si es necesario
+            self.fallos_pagina += 1
+            if len(self.tabla_paginas) < self.tamaño_memoria:
+                self.tabla_paginas[pagina] = 1
+                self.orden_llegada[pagina] = self.tiempo_actual
+            else:
+                self.reemplazar_pagina(pagina)
+        
+        # Registrar el estado actual de la memoria
+        self.historial_memoria.append(self.obtener_estado_memoria())
+
+    def reemplazar_pagina(self, nueva_pagina):
+        # Buscar la página con el contador más bajo y mayor tiempo en memoria (FIFO en caso de empate)
+        pagina_menos_usada = min(
+            self.tabla_paginas.keys(),
+            key=lambda p: (self.tabla_paginas[p], self.orden_llegada[p])
+        )
+
+        # Reemplazar la página en memoria
+        del self.tabla_paginas[pagina_menos_usada]
+        del self.orden_llegada[pagina_menos_usada]
+        self.tabla_paginas[nueva_pagina] = 1
+        self.orden_llegada[nueva_pagina] = self.tiempo_actual
+
+    def obtener_estado_memoria(self):
+        """Devuelve el estado actual de la memoria como un vector ordenado."""
+        memoria = [None] * self.tamaño_memoria
+        for i, pagina in enumerate(self.tabla_paginas):
+            memoria[i] = pagina
+        return memoria
+
+    def simular_accesos(self, accesos):
+        for pagina in accesos:
+            self.acceder_pagina(pagina)
+
+    def mostrar_resultados(self):
+        print("Secuencia de estados de memoria (por pasos):")
+        for i, estado in enumerate(self.historial_memoria):
+            print(f"Paso {i + 1}: {estado}")
+        print(f"Número de fallos de página: {self.fallos_pagina}")
+        rendimiento = (1 - self.fallos_pagina / len(self.historial_memoria)) * 100
+        print(f"Rendimiento: {rendimiento:.2f}%")
+
+# Ejemplo de uso
+if __name__ == "__main__":
+    tamaño_memoria = 3
+    accesos = [2,3,2,1,5,2,4,5,3,2,5,2]
+    
+    algoritmo_nfu = NFU(tamaño_memoria)
+    algoritmo_nfu.simular_accesos(accesos)
+    algoritmo_nfu.mostrar_resultados()
+
