@@ -1,10 +1,11 @@
+#ajustes
 def primer_ajuste(bloques, procesos):
     asignaciones = [-1] * len(procesos)
     for i, proceso in enumerate(procesos):
         for j, bloque in enumerate(bloques):
             if bloque >= proceso:
                 asignaciones[i] = j
-                bloques[j] -= proceso
+                bloques[j] =-1
                 break
     return asignaciones
 
@@ -13,11 +14,11 @@ def mejor_ajuste(bloques, procesos):
     for i, proceso in enumerate(procesos):
         mejor_bloque = -1
         for j, bloque in enumerate(bloques):
-            if bloque >= proceso and (mejor_bloque == -1 or bloque < bloques[mejor_bloque]):
+            if bloque >= proceso and bloques[j] != -1 and (mejor_bloque == -1 or bloque < bloques[mejor_bloque]):
                 mejor_bloque = j
         if mejor_bloque != -1:
             asignaciones[i] = mejor_bloque
-            bloques[mejor_bloque] -= proceso
+            bloques[mejor_bloque] = -1
     return asignaciones
 
 def siguiente_ajuste(bloques, procesos):
@@ -34,16 +35,30 @@ def siguiente_ajuste(bloques, procesos):
             puntero = (puntero + 1) % n
     return asignaciones
 
+def siguiente_ajuste_sin_circularidad(bloques, procesos):
+    asignaciones = [-1] * len(procesos)  # -1 indica que no se asignó el proceso
+    start_index = 0  # Índice inicial para buscar bloques
+    
+    for i, proceso in enumerate(procesos):
+        for j in range(start_index, len(bloques)):  # Busca desde el índice actual hasta el final
+            if bloques[j] >= proceso and bloques[j] != -1:
+                asignaciones[i] = j  # Asignar el proceso al bloque
+                bloques[j] = -1  # Reducir el tamaño del bloque
+                start_index = j + 1 # Continuar desde este bloque
+                break
+    return asignaciones
+
+
 def peor_ajuste(bloques, procesos):
     asignaciones = [-1] * len(procesos)
     for i, proceso in enumerate(procesos):
         peor_bloque = -1
         for j, bloque in enumerate(bloques):
-            if bloque >= proceso and (peor_bloque == -1 or bloque > bloques[peor_bloque]):
+            if bloque >= proceso and bloques[j] != -1 and (peor_bloque == -1 or bloque > bloques[peor_bloque]):
                 peor_bloque = j
         if peor_bloque != -1:
             asignaciones[i] = peor_bloque
-            bloques[peor_bloque] -= proceso
+            bloques[peor_bloque] = -1
     return asignaciones
 
 def mostrar_resultados(procesos, asignaciones, nombre):
@@ -69,8 +84,13 @@ def main():
     siguiente_resultado = siguiente_ajuste(bloques[:], procesos)
     mostrar_resultados(procesos, siguiente_resultado, "Siguiente Ajuste")
 
+    siguiente_resultado2 = siguiente_ajuste_sin_circularidad(bloques[:], procesos)
+    mostrar_resultados(procesos, siguiente_resultado2, "Siguiente Ajuste2")
+
     peor_resultado = peor_ajuste(bloques[:], procesos)
     mostrar_resultados(procesos, peor_resultado, "Peor Ajuste")
 
 if __name__ == "__main__":
     main()
+
+
