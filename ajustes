@@ -1,0 +1,76 @@
+def primer_ajuste(bloques, procesos):
+    asignaciones = [-1] * len(procesos)
+    for i, proceso in enumerate(procesos):
+        for j, bloque in enumerate(bloques):
+            if bloque >= proceso:
+                asignaciones[i] = j
+                bloques[j] -= proceso
+                break
+    return asignaciones
+
+def mejor_ajuste(bloques, procesos):
+    asignaciones = [-1] * len(procesos)
+    for i, proceso in enumerate(procesos):
+        mejor_bloque = -1
+        for j, bloque in enumerate(bloques):
+            if bloque >= proceso and (mejor_bloque == -1 or bloque < bloques[mejor_bloque]):
+                mejor_bloque = j
+        if mejor_bloque != -1:
+            asignaciones[i] = mejor_bloque
+            bloques[mejor_bloque] -= proceso
+    return asignaciones
+
+def siguiente_ajuste(bloques, procesos):
+    asignaciones = [-1] * len(procesos)
+    puntero = 0
+    for i, proceso in enumerate(procesos):
+        n = len(bloques)
+        for _ in range(n):
+            if bloques[puntero] >= proceso:
+                asignaciones[i] = puntero
+                bloques[puntero] -= proceso
+                puntero = (puntero + 1) % n
+                break
+            puntero = (puntero + 1) % n
+    return asignaciones
+
+def peor_ajuste(bloques, procesos):
+    asignaciones = [-1] * len(procesos)
+    for i, proceso in enumerate(procesos):
+        peor_bloque = -1
+        for j, bloque in enumerate(bloques):
+            if bloque >= proceso and (peor_bloque == -1 or bloque > bloques[peor_bloque]):
+                peor_bloque = j
+        if peor_bloque != -1:
+            asignaciones[i] = peor_bloque
+            bloques[peor_bloque] -= proceso
+    return asignaciones
+
+def mostrar_resultados(procesos, asignaciones, nombre):
+    print(f"\nResultados para {nombre}:")
+    for i, asignacion in enumerate(asignaciones):
+        if asignacion != -1:
+            print(f"Proceso {i} (Tamaño {procesos[i]}) asignado al bloque {asignacion}.")
+        else:
+            print(f"Proceso {i} (Tamaño {procesos[i]}) no pudo ser asignado.")
+
+def main():
+    # Entrada de bloques y procesos
+    bloques = list(map(int, input("Ingrese los tamaños de los bloques de memoria (separados por espacio): ").split()))
+    procesos = list(map(int, input("Ingrese los tamaños de los procesos (separados por espacio): ").split()))
+
+    # Ejecutar algoritmos
+    primer_resultado = primer_ajuste(bloques[:], procesos)
+    mostrar_resultados(procesos, primer_resultado, "Primer Ajuste")
+
+    mejor_resultado = mejor_ajuste(bloques[:], procesos)
+    mostrar_resultados(procesos, mejor_resultado, "Mejor Ajuste")
+
+    siguiente_resultado = siguiente_ajuste(bloques[:], procesos)
+    mostrar_resultados(procesos, siguiente_resultado, "Siguiente Ajuste")
+
+    peor_resultado = peor_ajuste(bloques[:], procesos)
+    mostrar_resultados(procesos, peor_resultado, "Peor Ajuste")
+
+if __name__ == "__main__":
+    main()
