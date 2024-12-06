@@ -1,0 +1,39 @@
+def main():
+    # Solicitar el número de marcos (frames)
+    marcos = int(input("Ingrese el número de marcos: "))
+    num_paginas=int(input("Ingrese el numero de paginas a ingresar"))
+    
+    # Solicitar la secuencia de páginas
+    secuencia = list(map(int, input("Ingrese la secuencia de páginas (separadas por espacio): ").split()))
+    
+    # Inicializar estructuras de datos
+    memoria = []  # Marcos de memoria
+    tiempo_usado = {}  # Último tiempo de uso para cada página
+    fallos = 0  # Contador de fallos de página
+
+    print("\nSecuencia de reemplazo:")
+    for tiempo, pagina in enumerate(secuencia):
+        # Si la página no está en memoria, hay un fallo
+        if pagina not in memoria:
+            fallos += 1
+            # Si hay espacio en memoria, añadir directamente
+            if len(memoria) < marcos:
+                memoria.append(pagina)
+            else:
+                # Reemplazar la página menos recientemente usada
+                lru_pagina = min(tiempo_usado, key=tiempo_usado.get)
+                memoria[memoria.index(lru_pagina)] = pagina
+                del tiempo_usado[lru_pagina]
+        
+        # Actualizar el tiempo de uso de la página actual
+        tiempo_usado[pagina] = tiempo
+
+        # Mostrar el estado actual de los marcos
+        print(f"Paso {tiempo + 1}: {memoria}")
+
+    print(f"\nNúmero total de fallos de página: {fallos}")
+    r=(1-(fallos/num_paginas))*100
+    print(f"\nRendimiento: {r}%")
+
+if __name__ == "__main__":
+    main()
