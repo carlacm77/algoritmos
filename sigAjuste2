@@ -1,0 +1,49 @@
+def siguiente_ajuste(tamanos_bloques, tamanos_procesos, ultimo_bloque_asignado):
+    n_bloques = len(tamanos_bloques)
+    n_procesos = len(tamanos_procesos)
+    asignaciones = [-1] * n_procesos  # Inicializa todas las asignaciones como no realizadas (-1)
+    
+    # Comenzar desde el bloque indicado
+    bloque_actual = ultimo_bloque_asignado
+
+    for i in range(n_procesos):
+        encontrado = False
+
+        # Recorrer los bloques, comenzando desde el último bloque asignado
+        for _ in range(n_bloques):
+            # Si el bloque actual tiene suficiente espacio
+            if tamanos_bloques[bloque_actual] >= tamanos_procesos[i]:
+                asignaciones[i] = bloque_actual
+                tamanos_bloques[bloque_actual] -= tamanos_procesos[i]
+                encontrado = True
+                break
+
+            # Mover al siguiente bloque (con recorrido cíclico)
+            bloque_actual = (bloque_actual + 1) % n_bloques
+
+        if encontrado:
+            # Avanzar al siguiente bloque después de asignar
+            bloque_actual = (bloque_actual + 1) % n_bloques
+        
+    return asignaciones
+
+# Entradas del usuario
+print("Introduce los tamaños de los bloques de memoria (separados por espacios):")
+tamanos_bloques = list(map(int, input().split()))
+
+print("Introduce los tamaños de las solicitudes de memoria (separados por espacios):")
+tamanos_procesos = list(map(int, input().split()))
+
+print("Introduce el número del bloque donde terminó la última asignación (0-indexado):")
+ultimo_bloque_asignado = int(input())
+
+# Llamar a la función
+asignaciones = siguiente_ajuste(tamanos_bloques, tamanos_procesos, ultimo_bloque_asignado)
+
+# Mostrar las asignaciones
+print("\nAsignaciones de procesos a bloques:")
+for i, asignacion in enumerate(asignaciones):
+    if asignacion != -1:
+        print(f"El proceso {i + 1} se asignó al bloque {asignacion + 1}")
+    else:
+        print(f"El proceso {i + 1} no se pudo asignar a ningún bloque.")
