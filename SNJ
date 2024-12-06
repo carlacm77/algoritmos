@@ -1,0 +1,62 @@
+def main():
+    # Solicitar el número de procesos
+    n = int(input("Ingrese el número de procesos: "))
+    
+    # Crear una lista para almacenar la información de los procesos
+    procesos = []
+    for i in range(n):
+        print(f"Proceso P{i}:")
+        t_ll = int(input("  Ingrese el tiempo de llegada (T_LL): "))
+        t_cpu = int(input("  Ingrese el tiempo de ráfaga (T_CPU): "))
+        procesos.append([i, t_ll, t_cpu, 0, 0, 0, 0])  # ID, T_LL, T_CPU, T_FIN, T_ESPERA, P_PENALIZACION, P_RESPUESTA
+    
+    # Ordenar inicialmente por tiempo de llegada
+    procesos.sort(key=lambda x: x[1])
+
+    # Variables para el control del tiempo
+    tiempo_actual = 0
+    terminados = 0
+    visitados = [False] * n
+
+    while terminados < n:
+        # Seleccionar el siguiente proceso con menor tiempo de CPU que haya llegado
+        indice = -1
+        for i in range(n):
+            if not visitados[i] and procesos[i][1] <= tiempo_actual:
+                if indice == -1 or procesos[i][2] < procesos[indice][2]:
+                    indice = i
+        
+        if indice == -1:  # No hay procesos disponibles; avanzar en el tiempo
+            tiempo_actual += 1
+            continue
+
+        # Ejecutar el proceso seleccionado
+        visitados[indice] = True
+        proceso = procesos[indice]
+        tiempo_actual += proceso[2]
+        proceso[3] = tiempo_actual  # T_FIN
+        proceso[4] = proceso[3] - proceso[1] - proceso[2]  # T_ESPERA
+        proceso[5] = proceso[3] / proceso[2]  # P_PENALIZACION
+        proceso[6] = proceso[2] / (proceso[3] - proceso[1])  # P_RESPUESTA
+        terminados += 1
+
+    # Calcular promedios
+    promedio_espera = sum(p[4] for p in procesos) / n
+    promedio_penalizacion = sum(p[5] for p in procesos) / n
+    promedio_respuesta = sum(p[6] for p in procesos) / n
+
+    # Mostrar resultados
+    print("\nResultados:")
+    print("P#   T_LL   T_CPU   T_FIN   T_ESPERA   P_PENALIZACION   P_RESPUESTA")
+    for p in procesos:
+        print(f"{p[0]:<4} {p[1]:<6} {p[2]:<7} {p[3]:<7} {p[4]:<10} {p[5]:<15.2f} {p[6]:.2f}")
+    
+    # Mostrar promedios
+    print("\nPromedios:")
+    print(f"Tiempo de espera promedio: {promedio_espera:.2f}")
+    print(f"Proporción de penalización promedio: {promedio_penalizacion:.2f}")
+    print(f"Proporción de respuesta promedio: {promedio_respuesta:.2f}")
+
+if __name__ == "__main__":
+    main()
+
