@@ -1,0 +1,47 @@
+def politica_reloj(paginas, num_marcos):
+    marcos = [-1] * num_marcos  # Inicializar marcos vacíos
+    bits_uso = [0] * num_marcos  # Bits de uso para cada marco
+    puntero = 0  # Puntero circular
+    fallos = 0  # Contador de fallos de página
+    secuencia_reemplazo = []  # Secuencia de estados de los marcos
+
+    for pagina in paginas:
+        if pagina in marcos:
+            # Si la página ya está en memoria, activar el bit de uso
+            bits_uso[marcos.index(pagina)] = 1
+        else:
+            # Fallo de página: encontrar la página a reemplazar
+            while bits_uso[puntero] == 1:
+                bits_uso[puntero] = 0  # Limpiar el bit de uso
+                puntero = (puntero + 1) % num_marcos  # Avanzar el puntero circularmente
+
+            # Reemplazar la página en el marco apuntado
+            marcos[puntero] = pagina
+            bits_uso[puntero] = 1  # Activar el bit de uso para la nueva página
+            puntero = (puntero + 1) % num_marcos  # Mover el puntero circularmente
+            fallos += 1
+
+        # Guardar el estado actual de los marcos, omitiendo los vacíos (-1)
+        estado_actual = [pagina for pagina in marcos if pagina != -1]
+        secuencia_reemplazo.append(estado_actual)
+
+    # Calcular el rendimiento
+    rendimiento = (len(paginas) - fallos) / len(paginas) * 100
+
+    return fallos, rendimiento, secuencia_reemplazo
+
+
+# Entradas
+paginas = list(map(int, input("Ingrese la secuencia de páginas separadas por espacios: ").split()))
+num_marcos = int(input("Ingrese el número de marcos de página disponibles: "))
+
+# Ejecución del algoritmo
+fallos, rendimiento, secuencia_reemplazo = politica_reloj(paginas, num_marcos)
+
+# Salidas
+print("\n--- Resultados: Política del Reloj ---")
+print("Secuencia de reemplazos:")
+for i, estado in enumerate(secuencia_reemplazo):
+    print(f"Paso {i + 1}: {estado}")
+print(f"\nNúmero total de fallos de página: {fallos}")
+print(f"Rendimiento: {rendimiento:.2f}%")
