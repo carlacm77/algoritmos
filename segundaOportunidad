@@ -1,0 +1,58 @@
+from collections import deque
+
+def segunda_oportunidad(paginas, num_marcos):
+    marcos = deque()  # Cola FIFO para los marcos
+    bits_uso = {}  # Diccionario para almacenar bits de uso
+    fallos = 0  # Contador de fallos de página
+    secuencia_reemplazo = []  # Para mostrar la secuencia de reemplazos
+
+    for pagina in paginas:
+        if pagina in marcos:
+            # Si la página ya está en memoria, activar el bit de uso
+            bits_uso[pagina] = 1
+        else:
+            # Fallo de página
+            if len(marcos) < num_marcos:
+                # Si hay espacio en los marcos, agregar la página
+                marcos.append(pagina)
+                bits_uso[pagina] = 0
+            else:
+                # Si no hay espacio, aplicar Segunda Oportunidad
+                while True:
+                    marco = marcos.popleft()  # Sacar el frente de la cola
+                    if bits_uso[marco] == 0:
+                        # Reemplazar la página si el bit de uso es 0
+                        del bits_uso[marco]  # Eliminar el marco de bits_uso
+                        marcos.append(pagina)  # Agregar la nueva página
+                        bits_uso[pagina] = 0  # Establecer el bit de uso
+                        break
+                    else:
+                        # Dar una segunda oportunidad: resetear bit y mover al final
+                        bits_uso[marco] = 0
+                        marcos.append(marco)
+
+            fallos += 1  # Incrementar el contador de fallos
+
+        # Guardar el estado actual de los marcos
+        secuencia_reemplazo.append(list(marcos))
+
+    # Calcular el rendimiento
+    rendimiento = (len(paginas) - fallos) / len(paginas) * 100
+
+    return fallos, rendimiento, secuencia_reemplazo
+
+
+# Entrada para la prueba
+paginas = list(map(int, input("Ingrese la secuencia de páginas separadas por espacios: ").split()))
+num_marcos = int(input("Ingrese el número de marcos de página disponibles: "))
+
+# Ejecución del algoritmo
+fallos, rendimiento, secuencia_reemplazo = segunda_oportunidad(paginas, num_marcos)
+
+# Salidas
+print("\n--- Resultados: Segunda Oportunidad ---")
+print("Secuencia de reemplazos:")
+for i, estado in enumerate(secuencia_reemplazo):
+    print(f"Paso {i + 1}: {estado}")
+print(f"\nNúmero total de fallos de página: {fallos}")
+print(f"Rendimiento: {rendimiento:.2f}%")
