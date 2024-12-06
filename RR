@@ -1,0 +1,77 @@
+#round robin
+def main():
+    # Solicitar el número de procesos y el quantum
+    n = int(input("Ingrese el número de procesos: "))
+    quantum = int(input("Ingrese el valor del quantum (Q): "))
+    
+    # Crear una lista para almacenar la información de los procesos
+    procesos = []
+    for i in range(n):
+        print(f"Proceso P{i}:")
+        t_ll = int(input("  Ingrese el tiempo de llegada (T_LL): "))
+        t_cpu = int(input("  Ingrese el tiempo de ráfaga (T_CPU): "))
+        procesos.append([i, t_ll, t_cpu, 0, 0, 0, 0, t_cpu])  # ID, T_LL, T_CPU, T_FIN, T_ESPERA, P_PENALIZACION, P_RESPUESTA, RESTANTE
+
+    # Ordenar por tiempo de llegada
+    procesos.sort(key=lambda x: x[1])
+
+    # Variables para controlar el tiempo
+    tiempo_actual = 0
+    cola = []
+    completados = 0
+    visitados = [False] * n
+
+    while completados < n:
+        # Añadir a la cola los procesos que han llegado
+        for i in range(n):
+            if not visitados[i] and procesos[i][1] <= tiempo_actual:
+                cola.append(i)
+                visitados[i] = True
+
+        if not cola:  # Si no hay procesos disponibles, avanzar en el tiempo
+            tiempo_actual += 1
+            continue
+
+        # Tomar el primer proceso de la cola
+        actual = cola.pop(0)
+        proceso = procesos[actual]
+
+        # Ejecutar el proceso por el quantum o el tiempo restante, lo que sea menor
+        tiempo_ejecutado = min(quantum, proceso[7])  # Quantum o tiempo restante
+        tiempo_actual += tiempo_ejecutado
+        proceso[7] -= tiempo_ejecutado  # Reducir el tiempo restante
+
+        # Añadir de nuevo a la cola si el proceso no ha terminado
+        if proceso[7] > 0:
+            for i in range(n):
+                if not visitados[i] and procesos[i][1] <= tiempo_actual:
+                    cola.append(i)
+                    visitados[i] = True
+            cola.append(actual)
+        else:
+            # Si el proceso ha terminado, calcular sus tiempos
+            proceso[3] = tiempo_actual  # T_FIN
+            proceso[4] = proceso[3] - proceso[1] - proceso[2]  # T_ESPERA
+            proceso[5] = (proceso[3] - proceso[1]) / proceso[2]  # P_PENALIZACION
+            proceso[6] = proceso[2] / (proceso[3] - proceso[1])  # P_RESPUESTA
+            completados += 1
+
+    # Calcular promedios
+    promedio_espera = sum(p[4] for p in procesos) / n
+    promedio_penalizacion = sum(p[5] for p in procesos) / n
+    promedio_respuesta = sum(p[6] for p in procesos) / n
+
+    # Mostrar resultados
+    print("\nResultados:")
+    print("P#   T_LL   T_CPU   T_FIN   T_ESPERA   P_PENALIZACION   P_RESPUESTA")
+    for p in procesos:
+        print(f"{p[0]:<4} {p[1]:<6} {p[2]:<7} {p[3]:<7} {p[4]:<10} {p[5]:<15.2f} {p[6]:.2f}")
+    
+    # Mostrar promedios
+    print("\nPromedios:")
+    print(f"Tiempo de espera promedio: {promedio_espera:.2f}")
+    print(f"Proporción de penalización promedio: {promedio_penalizacion:.2f}")
+    print(f"Proporción de respuesta promedio: {promedio_respuesta:.2f}")
+
+if __name__ == "__main__":
+    main()
