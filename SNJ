@@ -36,7 +36,7 @@ def main():
         tiempo_actual += proceso[2]
         proceso[3] = tiempo_actual  # T_FIN
         proceso[4] = proceso[3] - proceso[1] - proceso[2]  # T_ESPERA
-        proceso[5] = proceso[3] / proceso[2]  # P_PENALIZACION
+        proceso[5] = (proceso[3] - proceso[1]) / proceso[2]  # P_PENALIZACION
         proceso[6] = proceso[2] / (proceso[3] - proceso[1])  # P_RESPUESTA
         terminados += 1
 
