@@ -1,0 +1,74 @@
+class Proceso:
+    def __init__(self, id, tiempo_llegada, tiempo_ejecucion, prioridad):
+        self.id = id
+        self.tiempo_llegada = tiempo_llegada
+        self.tiempo_ejecucion = tiempo_ejecucion
+        self.prioridad = prioridad
+        self.tiempo_finalizacion = 0
+        self.tiempo_espera = 0
+        self.tiempo_respuesta = 0
+        self.proporcion_penalizacion = 0
+        self.proporcion_respuesta = 0
+
+
+class PlanificadorPrioridad:
+    def __init__(self, procesos):
+        self.procesos = sorted(procesos, key=lambda p: (p.tiempo_llegada, p.prioridad))
+        self.tiempo_actual = 0
+        self.resultados = []
+
+    def ejecutar(self):
+        while self.procesos:
+            # Selección de procesos disponibles en este instante según tiempo de llegada
+            disponibles = [p for p in self.procesos if p.tiempo_llegada <= self.tiempo_actual]
+            if disponibles:
+                # Escoger el proceso con la mayor prioridad (menor valor de prioridad)
+                proceso = min(disponibles, key=lambda p: p.prioridad)
+                self.tiempo_actual += proceso.tiempo_ejecucion
+                proceso.tiempo_finalizacion = self.tiempo_actual
+                proceso.tiempo_espera = proceso.tiempo_finalizacion - proceso.tiempo_llegada - proceso.tiempo_ejecucion
+                proceso.tiempo_respuesta = proceso.tiempo_finalizacion - proceso.tiempo_llegada
+                proceso.proporcion_penalizacion = (proceso.tiempo_respuesta)/ proceso.tiempo_ejecucion
+                proceso.proporcion_respuesta = proceso.tiempo_ejecucion / proceso.tiempo_respuesta
+                self.resultados.append(proceso)
+                self.procesos.remove(proceso)
+            else:
+                # Si no hay procesos disponibles, avanzar el tiempo actual al próximo proceso
+                self.tiempo_actual = min(p.tiempo_llegada for p in self.procesos)
+
+    def mostrar_resultados(self):
+        print(f"{'ID':<5} {'T. Llegada':<12} {'T. Ejecución':<15} {'Prioridad':<10} "
+              f"{'T. Finalización':<15} {'T. Espera':<10} {'P. Penalización':<18} {'P. Respuesta':<15}")
+        for p in self.resultados:
+            print(f"{p.id:<5} {p.tiempo_llegada:<12} {p.tiempo_ejecucion:<15} {p.prioridad:<10} "
+                  f"{p.tiempo_finalizacion:<15} {p.tiempo_espera:<10} {p.proporcion_penalizacion:<18.2f} {p.proporcion_respuesta:<15.2f}")
+
+        # Cálculo de promedios
+        prom_espera = sum(p.tiempo_espera for p in self.resultados) / len(self.resultados)
+        prom_penalizacion = sum(p.proporcion_penalizacion for p in self.resultados) / len(self.resultados)
+        prom_respuesta = sum(p.proporcion_respuesta for p in self.resultados) / len(self.resultados)
+
+        print("\nPromedios:")
+        print(f"Tiempo de espera promedio: {prom_espera:.2f}")
+        print(f"Proporción de penalización promedio: {prom_penalizacion:.2f}")
+        print(f"Proporción de respuesta promedio: {prom_respuesta:.2f}")
+
+
+def ingresar_procesos():
+    n = int(input("Ingrese el número de procesos: "))
+    procesos = []
+    for i in range(1, n + 1):
+        print(f"\nIngrese los datos del Proceso {i}:")
+        tiempo_llegada = int(input("  Tiempo de llegada: "))
+        tiempo_ejecucion = int(input("  Tiempo de ejecución: "))
+        prioridad = int(input("  Prioridad (menor número = mayor prioridad): "))
+        procesos.append(Proceso(id=i, tiempo_llegada=tiempo_llegada, tiempo_ejecucion=tiempo_ejecucion, prioridad=prioridad))
+    return procesos
+
+
+# Ejemplo de uso
+if __name__ == "__main__":
+    procesos = ingresar_procesos()
+    planificador = PlanificadorPrioridad(procesos)
+    planificador.ejecutar()
+    planificador.mostrar_resultados()
